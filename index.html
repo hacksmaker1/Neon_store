@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEON//MARKETPLACE - Ultra Engine</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); }
+        input, textarea, select, body, main { transition: border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease, transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); }
+        body { background-color: #060608; color: #ffffff; padding-bottom: 80px; overflow-x: hidden; position: relative; }
+        body::before { content: ''; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 70% 30%, #00ff8808 0%, transparent 40%), radial-gradient(circle at 20% 80%, #00e1ff05 0%, transparent 40%); animation: drift 20s infinite alternate ease-in-out; z-index: -1; }
+        @keyframes drift { 0% { transform: rotate(0deg) scale(1); } 100% { transform: rotate(5deg) scale(1.1); } }
+
+        /* --- LOGIN SCREEN --- */
+        #loginScreen {
+            position: fixed; inset: 0;
+            background: #060608;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 9999;
+        }
+        .login-box {
+            background: rgba(20,20,25,0.9);
+            border: 1px solid rgba(0,255,136,0.2);
+            border-radius: 20px;
+            padding: 50px 40px;
+            width: 100%; max-width: 420px;
+            text-align: center;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.5), 0 0 60px rgba(0,255,136,0.04);
+            backdrop-filter: blur(20px);
+        }
+        .login-logo {
+            font-size: 2rem; font-weight: 900; color: #00ff88;
+            letter-spacing: 3px; text-shadow: 0 0 20px rgba(0,255,136,0.3);
+            margin-bottom: 8px;
+        }
+        .login-sub {
+            font-size: 0.75rem; color: rgba(255,255,255,0.25);
+            letter-spacing: 2px; text-transform: uppercase;
+            margin-bottom: 40px;
+        }
+        .login-box label {
+            display: block; text-align: left;
+            font-size: 0.7rem; font-weight: 800;
+            color: rgba(255,255,255,0.35);
+            text-transform: uppercase; letter-spacing: 1.5px;
+            margin-bottom: 8px;
+        }
+        .login-box input {
+            width: 100%; padding: 16px 18px;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: white; border-radius: 10px;
+            font-size: 1rem; margin-bottom: 20px;
+            outline: none;
+        }
+        .login-box input:focus { border-color: #00ff88; box-shadow: 0 0 15px rgba(0,255,136,0.1); }
+        .login-btn {
+            width: 100%; padding: 16px;
+            background: #00ff88; color: #060608;
+            border: none; border-radius: 10px;
+            font-size: 0.95rem; font-weight: 900;
+            letter-spacing: 1.5px; text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 6px 25px rgba(0,255,136,0.3);
+        }
+        .login-btn:hover { background: #00ffb3; box-shadow: 0 8px 35px rgba(0,255,136,0.5); transform: translateY(-2px); }
+        .login-note {
+            margin-top: 18px; font-size: 0.72rem;
+            color: rgba(255,255,255,0.18); line-height: 1.6;
+        }
+        .login-note span { color: rgba(0,255,136,0.4); }
+
+        /* --- HEADER --- */
+        header { position: fixed; top: 0; left: 0; width: 100%; background-color: rgba(6,6,8,0.85); border-bottom: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 1000; }
+        .nav-container { max-width: 1300px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 2rem; gap: 16px; }
+        .logo { font-size: 1.5rem; font-weight: 900; color: #00ff88; text-decoration: none; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,255,136,0.2); }
+        .nav-user {
+            display: flex; align-items: center; gap: 12px;
+        }
+        .nav-username {
+            background: rgba(0,255,136,0.08);
+            border: 1px solid rgba(0,255,136,0.2);
+            padding: 8px 18px; border-radius: 30px;
+            font-size: 0.8rem; font-weight: 800;
+            color: #00ff88; letter-spacing: 1px;
+        }
+        .nav-signout {
+            background: rgba(255,60,60,0.08);
+            border: 1px solid rgba(255,60,60,0.2);
+            padding: 8px 16px; border-radius: 30px;
+            font-size: 0.75rem; font-weight: 800;
+            color: rgba(255,100,100,0.8);
+            cursor: pointer; letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .nav-signout:hover { background: rgba(255,60,60,0.15); color: #ff6464; }
+
+        /* --- MAIN LAYOUT --- */
+        main { max-width: 1300px; margin: 120px auto 0 auto; padding: 0 2rem; display: grid; grid-template-columns: 1fr 400px; gap: 50px; }
+        @media (max-width: 1024px) { main { grid-template-columns: 1fr; } }
+
+        h2 { font-size: 1.4rem; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.9); display: flex; align-items: center; gap: 10px; }
+        h2::before { content: ''; display: inline-block; width: 4px; height: 18px; background-color: #00ff88; box-shadow: 0 0 10px #00ff88; border-radius: 2px; }
+
+        /* --- SHOP GRID --- */
+        .shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 30px; margin-bottom: 60px; }
+        .item-card { background: rgba(20,20,25,0.4); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.04); display: flex; flex-direction: column; backdrop-filter: blur(5px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .item-card:hover { transform: translateY(-8px) scale(1.02); border-color: rgba(0,255,136,0.4); background: rgba(20,20,25,0.7); box-shadow: 0 20px 40px rgba(0,255,136,0.08), 0 1px 1px rgba(0,255,136,0.2) inset; }
+        .item-image-wrapper { width: 100%; height: 190px; background-color: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; }
+        .item-image-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        .item-info { padding: 24px; display: flex; flex-direction: column; flex-grow: 1; }
+        .item-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 6px; }
+        .item-title { font-size: 1.25rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .item-price { font-size: 1.15rem; font-weight: 800; color: #00ff88; text-shadow: 0 0 10px rgba(0,255,136,0.2); white-space: nowrap; }
+        .item-creator { font-size: 0.75rem; color: rgba(255,255,255,0.3); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 1px; }
+        .item-description { font-size: 0.9rem; color: rgba(255,255,255,0.6); line-height: 1.5; margin-bottom: 16px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .item-actions { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
+
+        /* --- BUTTONS --- */
+        .btn { background-color: #00ff88; color: #060608; text-align: center; padding: 14px; border-radius: 8px; font-weight: 800; font-size: 0.9rem; border: none; cursor: pointer; width: 100%; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(0,255,136,0.2); text-decoration: none; display: block; }
+        .btn:hover { background-color: #00ffb3; box-shadow: 0 6px 25px rgba(0,255,136,0.4); transform: translateY(-2px); }
+        .btn:active { transform: translateY(1px); }
+        .btn:disabled { background-color: rgba(255,255,255,0.04) !important; color: rgba(255,255,255,0.15) !important; box-shadow: none !important; cursor: not-allowed; transform: none !important; }
+        .btn-delete { background: rgba(255,60,60,0.1); color: rgba(255,100,100,0.8); border: 1px solid rgba(255,60,60,0.25); box-shadow: none; font-size: 0.78rem; padding: 10px; }
+        .btn-delete:hover { background: rgba(255,60,60,0.2); color: #ff6464; box-shadow: 0 4px 15px rgba(255,60,60,0.15); transform: translateY(-1px); }
+
+        /* --- ADMIN PANEL --- */
+        .admin-panel { background: rgba(20,20,25,0.3); border: 1px solid rgba(255,255,255,0.04); padding: 35px; border-radius: 16px; height: fit-content; position: sticky; top: 100px; backdrop-filter: blur(10px); box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
+        .admin-panel h3 { color: #00ff88; margin-bottom: 25px; text-transform: uppercase; font-size: 1.15rem; letter-spacing: 1.5px; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.6rem; font-size: 0.75rem; color: rgba(255,255,255,0.4); text-transform: uppercase; font-weight: 800; letter-spacing: 1px; }
+        .form-group input, .form-group textarea { width: 100%; padding: 14px; background-color: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); color: white; border-radius: 8px; font-size: 0.95rem; }
+        .form-group input:focus, .form-group textarea:focus { border-color: #00ff88; background-color: rgba(0,0,0,0.5); box-shadow: 0 0 15px rgba(0,255,136,0.08); outline: none; }
+        .file-upload-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%; margin-bottom: 10px; }
+        .file-upload-btn { border: 1px dashed rgba(255,255,255,0.15); color: rgba(255,255,255,0.5); background-color: rgba(0,0,0,0.2); padding: 14px; border-radius: 8px; text-align: center; font-size: 0.9rem; cursor: pointer; display: block; }
+        .file-upload-btn:hover { border-color: #00ff88; color: #00ff88; }
+        .file-upload-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; }
+
+        /* --- PURCHASE LOG --- */
+        .log-section { grid-column: 1 / -1; margin-top: 20px; }
+        .log-table-wrapper { background: rgba(20,20,25,0.3); border: 1px solid rgba(255,255,255,0.04); border-radius: 16px; overflow: hidden; backdrop-filter: blur(5px); }
+        .log-empty { text-align: center; color: rgba(255,255,255,0.15); padding: 40px; font-style: italic; font-size: 0.9rem; letter-spacing: 1px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        thead tr { background: rgba(0,255,136,0.05); border-bottom: 1px solid rgba(0,255,136,0.15); }
+        th { padding: 14px 20px; text-align: left; text-transform: uppercase; letter-spacing: 1.5px; font-size: 0.7rem; color: rgba(0,255,136,0.6); font-weight: 800; }
+        td { padding: 14px 20px; color: rgba(255,255,255,0.75); border-bottom: 1px solid rgba(255,255,255,0.03); }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover td { background: rgba(255,255,255,0.02); }
+        .log-status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+        .badge-roblox { background: rgba(0,162,255,0.15); color: #00a2ff; border: 1px solid rgba(0,162,255,0.3); }
+        .badge-local  { background: rgba(0,255,136,0.1);  color: #00ff88;  border: 1px solid rgba(0,255,136,0.25); }
+        .log-link { color: #00a2ff; text-decoration: none; font-size: 0.8rem; }
+        .log-link:hover { text-decoration: underline; }
+        .log-price { color: #00ff88; font-weight: 800; }
+    </style>
+</head>
+<body>
+
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen">
+        <div class="login-box">
+            <div class="login-logo">NEON//ULTRA</div>
+            <div class="login-sub">Marketplace</div>
+            <label for="loginInput">Your Roblox Username</label>
+            <input type="text" id="loginInput" placeholder="Enter your username..." onkeydown="if(event.key==='Enter') signIn()">
+            <button class="login-btn" onclick="signIn()">Sign In</button>
+            <div class="login-note">This uses your username as a session identity.<br><span>Your listings will only be deletable by you.</span></div>
+        </div>
+    </div>
+
+    <header>
+        <div class="nav-container">
+            <a href="#" class="logo">NEON//ULTRA</a>
+            <div class="nav-user">
+                <div class="nav-username">👤 <span id="navUsername"></span></div>
+                <div class="nav-signout" onclick="signOut()">Sign Out</div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div>
+            <section>
+                <h2>Active Asset Pipeline</h2>
+                <div class="shop-grid" id="catalogGrid"></div>
+            </section>
+            <section class="log-section">
+                <h2>Purchase Log</h2>
+                <div class="log-table-wrapper" id="logWrapper">
+                    <div class="log-empty" id="logEmpty">No transactions recorded yet. All purchases will appear here.</div>
+                    <table id="logTable" style="display:none;">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Timestamp</th>
+                                <th>Asset</th>
+                                <th>Seller</th>
+                                <th>Price (R$)</th>
+                                <th>Type</th>
+                                <th>Gamepass Link</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <aside class="admin-panel">
+            <h3>Deploy Asset</h3>
+            <div class="form-group">
+                <label>Asset Name</label>
+                <input type="text" id="formTitle" placeholder="e.g., Godly Neon Katana">
+            </div>
+            <div class="form-group">
+                <label>Price (R$)</label>
+                <input type="number" id="formPrice" placeholder="e.g., 150">
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="formDesc" rows="3" placeholder="What does this asset do?"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Thumbnail (.png/.jpg)</label>
+                <div class="file-upload-wrapper">
+                    <span class="file-upload-btn" id="thumbLabel">Select Image...</span>
+                    <input type="file" id="formImage" accept="image/*" onchange="processMediaFile(this)">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Roblox Gamepass Link (Optional)</label>
+                <input type="url" id="formGamepass" placeholder="https://www.roblox.com/game-pass/...">
+            </div>
+            <div class="form-group">
+                <label>Download File (Optional)</label>
+                <div class="file-upload-wrapper">
+                    <span class="file-upload-btn" id="payloadLabel" style="border-style:dotted;">Select File...</span>
+                    <input type="file" id="formPayload" onchange="processPayloadFile(this)">
+                </div>
+            </div>
+            <button class="btn" style="margin-top:10px;" onclick="deployAssetNode()">Deploy to Storefront</button>
+        </aside>
+    </main>
+
+    <script>
+        let currentUser = null;
+        let marketRecords = [];
+        let purchaseLogs = [];
+        let logCounter = 1;
+        let base64Thumbnail = "", base64Payload = "", payloadFileName = "";
+
+        function signIn() {
+            const input = document.getElementById('loginInput').value.trim();
+            if (!input) { alert("Please enter your Roblox username."); return; }
+            currentUser = input;
+            document.getElementById('navUsername').innerText = currentUser;
+            document.getElementById('loginScreen').style.display = 'none';
+            // Auto-fill creator field
+            renderMarketplace();
+        }
+
+        function signOut() {
+            if (!confirm("Sign out of " + currentUser + "?")) return;
+            currentUser = null;
+            document.getElementById('loginInput').value = '';
+            document.getElementById('loginScreen').style.display = 'flex';
+            renderMarketplace();
+        }
+
+        function processMediaFile(input) {
+            const file = input.files[0]; if (!file) return;
+            document.getElementById('thumbLabel').innerText = file.name;
+            document.getElementById('thumbLabel').style.borderColor = "#00ff88";
+            const r = new FileReader();
+            r.onloadend = () => base64Thumbnail = r.result;
+            r.readAsDataURL(file);
+        }
+
+        function processPayloadFile(input) {
+            const file = input.files[0]; if (!file) return;
+            payloadFileName = file.name;
+            document.getElementById('payloadLabel').innerText = file.name;
+            document.getElementById('payloadLabel').style.borderColor = "#00ff88";
+            const r = new FileReader();
+            r.onloadend = () => base64Payload = r.result;
+            r.readAsDataURL(file);
+        }
+
+        function deployAssetNode() {
+            if (!currentUser) { alert("Please sign in first."); return; }
+            const title = document.getElementById('formTitle').value.trim();
+            const priceRaw = document.getElementById('formPrice').value;
+            const price = parseInt(priceRaw);
+            const desc = document.getElementById('formDesc').value.trim();
+            const gamepassUrl = document.getElementById('formGamepass').value.trim();
+
+            if (!title) { alert("Asset Name is required."); return; }
+            if (!desc)   { alert("Description is required."); return; }
+            if (priceRaw === '' || isNaN(price) || price < 0) { alert("A valid Price is required."); return; }
+            if (!base64Thumbnail) { alert("A Thumbnail image is required."); return; }
+
+            marketRecords.push({
+                id: 'node_' + Date.now(),
+                title, creator: currentUser, price, desc,
+                thumbnail: base64Thumbnail,
+                fileData: base64Payload || null,
+                fileName: payloadFileName || null,
+                gamepassUrl: gamepassUrl || null,
+                sold: false
+            });
+
+            renderMarketplace();
+            wipeFields();
+            showToast(`"${title}" deployed to storefront!`);
+        }
+
+        function deleteItem(id) {
+            const item = marketRecords.find(i => i.id === id);
+            if (!item) return;
+            if (!confirm(`Delete "${item.title}" from the storefront?`)) return;
+            marketRecords = marketRecords.filter(i => i.id !== id);
+            renderMarketplace();
+            showToast(`"${item.title}" removed.`);
+        }
+
+        function renderMarketplace() {
+            const grid = document.getElementById('catalogGrid');
+            grid.innerHTML = "";
+
+            if (marketRecords.length === 0) {
+                grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:rgba(255,255,255,0.15);padding-top:60px;font-style:italic;font-size:0.95rem;letter-spacing:1px;">No listings yet. Deploy your first asset using the panel.</div>`;
+                return;
+            }
+
+            marketRecords.forEach(item => {
+                const isOwner = currentUser && currentUser.toLowerCase() === item.creator.toLowerCase();
+                const card = document.createElement('div');
+                card.className = 'item-card';
+
+                let actionBtn = '';
+                if (item.gamepassUrl) {
+                    actionBtn = `<a class="btn" href="${item.gamepassUrl}" target="_blank" rel="noopener" onclick="logPurchase('${item.id}','roblox')">Buy on Roblox — R$ ${item.price.toLocaleString()} ↗</a>`;
+                } else if (item.fileData) {
+                    actionBtn = item.sold
+                        ? `<button class="btn" disabled>Downloaded ✓</button>`
+                        : `<button class="btn" onclick="logAndDownload('${item.id}', this)">Download — R$ ${item.price.toLocaleString()}</button>`;
+                } else {
+                    actionBtn = `<button class="btn" onclick="logPurchase('${item.id}','local'); this.innerText='Acquired ✓'; this.disabled=true;">Acquire — R$ ${item.price.toLocaleString()}</button>`;
+                }
+
+                const deleteBtn = isOwner
+                    ? `<button class="btn btn-delete" onclick="deleteItem('${item.id}')">🗑 Delete My Listing</button>`
+                    : '';
+
+                card.innerHTML = `
+                    <div class="item-image-wrapper">
+                        <img src="${item.thumbnail}" alt="${item.title}">
+                        ${item.gamepassUrl ? `<div style="position:absolute;top:10px;left:10px;background:#00a2ff;color:#fff;font-size:0.6rem;font-weight:900;padding:4px 10px;border-radius:20px;letter-spacing:1px;">ROBLOX GAMEPASS</div>` : ''}
+                        ${isOwner ? `<div style="position:absolute;top:10px;right:10px;background:#00ff88;color:#060608;font-size:0.6rem;font-weight:900;padding:4px 10px;border-radius:20px;letter-spacing:1px;">YOUR LISTING</div>` : ''}
+                    </div>
+                    <div class="item-info">
+                        <div class="item-header">
+                            <div class="item-title">${item.title}</div>
+                            <div class="item-price">R$ ${item.price.toLocaleString()}</div>
+                        </div>
+                        <div class="item-creator">By: ${item.creator}</div>
+                        <div class="item-description">${item.desc}</div>
+                        <div class="item-actions">
+                            ${actionBtn}
+                            ${deleteBtn}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function logAndDownload(id, btn) {
+            const item = marketRecords.find(i => i.id === id);
+            if (!item) return;
+            item.sold = true;
+            logPurchase(id, 'local');
+            triggerSilentDownload(item.fileData, item.fileName);
+            btn.innerText = 'Downloaded ✓';
+            btn.disabled = true;
+        }
+
+        function logPurchase(id, type) {
+            const item = marketRecords.find(i => i.id === id);
+            if (!item) return;
+            const now = new Date();
+            purchaseLogs.push({ num: logCounter++, timestamp: now.toLocaleDateString() + ' ' + now.toLocaleTimeString(), item, type });
+            renderLog();
+        }
+
+        function renderLog() {
+            const empty = document.getElementById('logEmpty');
+            const table = document.getElementById('logTable');
+            const body = document.getElementById('logBody');
+            if (purchaseLogs.length === 0) { empty.style.display='block'; table.style.display='none'; return; }
+            empty.style.display = 'none';
+            table.style.display = 'table';
+            body.innerHTML = '';
+            [...purchaseLogs].reverse().forEach(log => {
+                const tr = document.createElement('tr');
+                const badgeClass = log.type === 'roblox' ? 'badge-roblox' : 'badge-local';
+                const badgeLabel = log.type === 'roblox' ? 'Roblox' : 'Local';
+                const linkCell = log.item.gamepassUrl
+                    ? `<a class="log-link" href="${log.item.gamepassUrl}" target="_blank" rel="noopener">View Gamepass ↗</a>`
+                    : `<span style="color:rgba(255,255,255,0.2);">—</span>`;
+                tr.innerHTML = `
+                    <td style="color:rgba(255,255,255,0.3);">#${log.num}</td>
+                    <td style="color:rgba(255,255,255,0.4);font-size:0.8rem;">${log.timestamp}</td>
+                    <td style="font-weight:600;">${log.item.title}</td>
+                    <td style="color:rgba(255,255,255,0.5);">${log.item.creator}</td>
+                    <td class="log-price">R$ ${log.item.price.toLocaleString()}</td>
+                    <td><span class="log-status-badge ${badgeClass}">${badgeLabel}</span></td>
+                    <td>${linkCell}</td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+
+        function triggerSilentDownload(base64Data, filename) {
+            const a = document.createElement('a');
+            a.href = base64Data; a.download = filename;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        }
+
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.innerText = msg;
+            Object.assign(toast.style, { position:'fixed', bottom:'30px', left:'50%', transform:'translateX(-50%)', background:'#00ff88', color:'#060608', padding:'14px 28px', borderRadius:'30px', fontWeight:'800', fontSize:'0.95rem', boxShadow:'0 8px 30px rgba(0,255,136,0.4)', zIndex:'9999', letterSpacing:'0.5px', transition:'opacity 0.5s ease', whiteSpace:'nowrap' });
+            document.body.appendChild(toast);
+            setTimeout(() => toast.style.opacity = '0', 2500);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function wipeFields() {
+            ['formTitle','formPrice','formDesc','formGamepass'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('formImage').value = '';
+            document.getElementById('formPayload').value = '';
+            document.getElementById('thumbLabel').innerText = "Select Image...";
+            document.getElementById('thumbLabel').style.borderColor = "rgba(255,255,255,0.15)";
+            document.getElementById('payloadLabel').innerText = "Select File...";
+            document.getElementById('payloadLabel').style.borderColor = "rgba(255,255,255,0.15)";
+            base64Thumbnail = ""; base64Payload = ""; payloadFileName = "";
+        }
+    </script>
+</body>
+</html>
